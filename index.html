@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F3F4F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161B" media="(prefers-color-scheme: dark)">
+<title>Gem Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<style>
+:root{
+  --page:#F3F4F7; --surface:#FFFFFF; --sub:#F1F2F6;
+  --border:rgba(20,20,40,.12); --border-strong:rgba(20,20,40,.24);
+  --text:#1A1B22; --text2:#5D6170;
+  --accent:#2A6FDB; --accent-bg:#E6F0FC; --on-accent:#FFFFFF;
+  --success:#1F7A3A; --success-bg:#E5F4EA;
+  --danger:#C62828; --danger-bg:#FCEBEB; --on-danger:#FFFFFF;
+  --gem:#7F77DD; --gem-text:#534AB7; --gem-bg:#EEEDFE;
+  --spark:#EF9F27; --spark-text:#9A5A00; --spark-bg:#FAEEDA;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --page:#15161B; --surface:#1F2027; --sub:#2A2C35;
+    --border:rgba(255,255,255,.12); --border-strong:rgba(255,255,255,.24);
+    --text:#ECEDF2; --text2:#A3A7B5;
+    --accent:#6EA8FE; --accent-bg:#1C2C45; --on-accent:#0B1526;
+    --success:#5CC27A; --success-bg:#16301F;
+    --danger:#F28B82; --danger-bg:#3A1A1A; --on-danger:#2A0F0F;
+    --gem:#8F87E8; --gem-text:#AFA9EC; --gem-bg:#26215C;
+    --spark:#EFA83A; --spark-text:#F5C06B; --spark-bg:#412402;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+[hidden]{display:none !important}
+.app{max-width:420px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;padding:0 14px}
+.hdr{display:flex;align-items:center;justify-content:center;gap:8px;padding:calc(14px + env(safe-area-inset-top)) 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.hdr span{font-family:"Fredoka",system-ui,sans-serif;font-size:32px;font-weight:500;line-height:1}
+main{flex:1}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.kid-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex:none;color:#FFFFFF}
+.avatar.img{border-radius:0}
+.kid-name{margin:0;flex:1;font-size:16px;font-weight:600}
+.dollars{font-size:26px;font-weight:600;color:var(--success)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:8px}
+.row p{margin:0 0 5px;font-size:13px}
+.ic-gem{color:var(--gem-text)} .ic-spark{color:var(--spark-text)}
+.dots{display:flex;gap:5px}
+.dots span{width:15px;height:15px;border-radius:50%;background:var(--sub);border:1px solid var(--border-strong);transition:background .2s}
+.dots.gem span.on{background:var(--gem);border-color:var(--gem)}
+.dots.spark span.on{background:var(--spark);border-color:var(--spark)}
+.btn{height:44px;border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--radius);cursor:pointer;padding:0 12px;transition:transform .08s,background .15s}
+.btn:active{transform:scale(.97)}
+.p1{width:92px;padding:0;white-space:nowrap}
+.outline-accent{width:100%;border-color:var(--accent);color:var(--accent);margin-top:2px}
+.nav{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--border);background:var(--page);padding:8px 14px calc(8px + env(safe-area-inset-bottom));margin:0 -14px}
+.nav button{border:none;background:transparent;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer}
+.nav button i{font-size:20px}
+.nav button[aria-selected="true"]{color:var(--accent)}
+h1.sec{margin:0 0 12px;font-size:20px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{height:36px;padding:0 14px;border:1px solid var(--border-strong);background:var(--surface);border-radius:var(--radius);cursor:pointer}
+.chip.on{background:var(--accent-bg);color:var(--accent);border-color:var(--accent)}
+.day{margin:16px 0 6px;font-size:13px;color:var(--text2)}
+.list{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 14px}
+.entry{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.entry:last-child{border-bottom:none}
+.amt{min-width:62px;font-size:14px;font-weight:600}
+.amt i{font-size:15px;vertical-align:-2px}
+.pos{color:var(--success)} .neg{color:var(--danger)}
+.entry .what{flex:1;min-width:0}
+.entry .what p{margin:0;font-size:14px;overflow-wrap:anywhere}
+.entry .what small{display:block;font-size:12px;color:var(--text2)}
+.icon-btn{width:44px;height:44px;border:none;background:transparent;border-radius:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+.icon-btn i{font-size:18px}
+.icon-btn.ring{border:1px solid var(--border-strong);background:var(--surface)}
+.empty{color:var(--text2);font-size:14px;text-align:center;padding:24px 0}
+.signout{display:block;margin:20px auto 12px;background:none;border:none;color:var(--text2);font-size:13px;text-decoration:underline;cursor:pointer;min-height:44px}
+/* Sign-in + status */
+.center{flex:1;display:flex;flex-direction:column;justify-content:center;padding-bottom:20vh}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:13px;color:var(--text2);margin-bottom:6px}
+.text{width:100%;height:44px;border:1px solid var(--border-strong);border-radius:var(--radius);background:var(--surface);padding:0 12px}
+.text:focus{outline:2px solid var(--accent);outline-offset:1px}
+.err{color:var(--danger);font-size:13px;margin:0 0 12px;min-height:18px}
+.msg{text-align:center;color:var(--text2);font-size:15px;line-height:1.5}
+/* Give / take sheet */
+.sheet{position:fixed;inset:0;background:var(--page);z-index:10;overflow-y:auto;transform:translateY(100%);transition:transform .25s ease;visibility:hidden}
+.sheet.open{transform:none;visibility:visible}
+.sheet-in{max-width:420px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom))}
+.sheet-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.sheet-head p{margin:0;font-size:18px;font-weight:600;flex:1}
+.seg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;margin-bottom:16px}
+.seg button{height:40px;border:none;background:transparent;border-radius:8px;cursor:pointer}
+.seg button.give.on{background:var(--success-bg);color:var(--success);font-weight:600}
+.seg button.take.on{background:var(--danger-bg);color:var(--danger);font-weight:600}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.stepper .num{font-size:44px;font-weight:600;min-width:80px;text-align:center}
+.round{width:52px;height:52px;border-radius:26px;border:1px solid var(--border-strong);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.round i{font-size:22px}
+.units{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.units button{padding:0 4px;white-space:nowrap}
+.units button i{font-size:18px;vertical-align:-3px;margin-right:3px}
+.units .u-spark.on{background:var(--spark-bg);color:var(--spark-text);border-color:var(--spark)}
+.units .u-gem.on{background:var(--gem-bg);color:var(--gem-text);border-color:var(--gem)}
+.units .u-dollar.on{background:var(--success-bg);color:var(--success);border-color:var(--success)}
+.label{margin:0 0 8px;font-size:13px;color:var(--text2)}
+#reason{margin:10px 0 16px}
+.preview{margin:0 0 10px;font-size:13px;color:var(--text2);text-align:center}
+.preview.bad{color:var(--danger)}
+.confirm{width:100%;height:48px;border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer}
+.confirm.give{background:var(--accent);color:var(--on-accent)}
+.confirm.take{background:var(--danger);color:var(--on-danger)}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--page);padding:10px 16px;border-radius:var(--radius);font-size:14px;opacity:0;pointer-events:none;transition:all .2s;z-index:20;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.pop{animation:pop .4s}
+@keyframes pop{40%{transform:scale(1.3)}}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hdr">
+    <svg width="66" height="42" viewBox="0 0 76 48" aria-hidden="true">
+      <g fill="none" stroke="#EF9F27" stroke-width="3" stroke-linecap="round"><path d="M5 7l5 4"/><path d="M2 24h7"/><path d="M5 41l5-4"/><path d="M71 7l-5 4"/><path d="M74 24h-7"/><path d="M71 41l-5-4"/></g>
+      <g fill="none" stroke="#7F77DD" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M24 10h28l10 12-24 22-24-22z"/><path d="M38 15l4 5-4 5-4-5z"/><path d="M38 25v9"/></g>
+    </svg>
+    <span>Gem Tracker</span>
+  </header>
+
+  <!-- Loading / setup / no-access messages -->
+  <section class="center" id="v-status">
+    <p class="msg" id="status-msg">Loading…</p>
+    <button class="signout" id="status-signout" hidden>Sign out</button>
+  </section>
+
+  <!-- Sign in -->
+  <section class="center" id="v-login" hidden>
+    <form id="login-form" novalidate>
+      <label class="field"><span>Email</span><input class="text" id="email" type="email" autocomplete="username" inputmode="email" placeholder="name@example.com" required></label>
+      <label class="field"><span>Password</span><input class="text" id="password" type="password" autocomplete="current-password" required></label>
+      <p class="err" id="login-err" role="alert"></p>
+      <button class="confirm give" id="login-btn" type="submit">Sign in</button>
+    </form>
+  </section>
+
+  <!-- App -->
+  <main id="v-app" hidden>
+    <section id="p-home" role="tabpanel" aria-labelledby="t-home"></section>
+    <section id="p-hist" role="tabpanel" aria-labelledby="t-hist" hidden>
+      <h1 class="sec">History</h1>
+      <div class="chips" id="filters" role="group" aria-label="Filter by kid"></div>
+      <div id="hist-list"></div>
+      <button class="signout" id="signout">Sign out</button>
+    </section>
+  </main>
+
+  <nav class="nav" id="nav" role="tablist" aria-label="Sections" hidden>
+    <button role="tab" id="t-home" aria-selected="true" aria-controls="p-home"><i class="ti ti-home" aria-hidden="true"></i>Home</button>
+    <button role="tab" id="t-hist" aria-selected="false" aria-controls="p-hist"><i class="ti ti-clock" aria-hidden="true"></i>History</button>
+  </nav>
+</div>
+
+<!-- Give or take away screen -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <button class="icon-btn ring" id="sheet-back" aria-label="Back"><i class="ti ti-arrow-left" aria-hidden="true"></i></button>
+      <p id="sheet-title">Kid</p>
+    </div>
+    <div class="seg" role="group" aria-label="Give or take away">
+      <button class="give" id="mode-give">Give</button>
+      <button class="take" id="mode-take">Take away</button>
+    </div>
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div class="stepper">
+        <button class="round" id="minus" aria-label="Decrease"><i class="ti ti-minus" aria-hidden="true"></i></button>
+        <span class="num" id="amount" aria-live="polite">1</span>
+        <button class="round" id="plus" aria-label="Increase"><i class="ti ti-plus" aria-hidden="true"></i></button>
+      </div>
+      <div class="units" role="group" aria-label="Unit">
+        <button class="btn u-spark" id="unit-spark"><i class="ti ti-sparkles" aria-hidden="true"></i>Sparks</button>
+        <button class="btn u-gem" id="unit-gem"><i class="ti ti-diamond" aria-hidden="true"></i>Gems</button>
+        <button class="btn u-dollar" id="unit-dollar"><i class="ti ti-currency-dollar" aria-hidden="true"></i>Dollars</button>
+      </div>
+    </div>
+    <p class="label">Reason</p>
+    <div class="chips" id="reason-chips"></div>
+    <label for="reason" class="sr-only">Reason details</label>
+    <input class="text" id="reason" type="text" maxlength="60" placeholder="Cleaned room without being asked" autocomplete="off">
+    <p class="preview" id="preview" aria-live="polite"></p>
+    <button class="confirm give" id="confirm">Give 1 spark</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+// =====================================================================
+//  SETUP: paste your Firebase config here (Project settings > Your apps)
+// =====================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCGlXKJ2lu-gBJYGjVAQkFbsxP4xjI4J8M",
+  authDomain: "points-app-1caa6.firebaseapp.com",
+  projectId: "points-app-1caa6",
+  storageBucket: "points-app-1caa6.firebasestorage.app",
+  messagingSenderId: "779933062941",
+  appId: "1:779933062941:web:704cfd9e09719064bbb3f4"
+};
+
+// How each parent's email shows in History ("by Mom"). Lowercase emails.
+const PARENT_NAMES = {
+  "casonnicholson@gmail.com": "Dad",
+  "shi.s.elliott@gmail.com": "Mom"
+};
+
+const FIREBASE_VERSION = "13.1.0";
+// =====================================================================
+
+const $ = id => document.getElementById(id);
+
+// Pictures a kid can use: set the kid document's `avatar` field to one of these keys.
+const AVATARS = {
+  stop: '<svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><polygon points="11,1 25,1 35,11 35,25 25,35 11,35 1,25 1,11" fill="#D62828"/><polygon points="12,4 24,4 32,12 32,24 24,32 12,32 4,24 4,12" fill="none" stroke="#FFFFFF" stroke-width="1.5"/><text x="18" y="21.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#FFFFFF">STOP</text></svg>',
+  guardian: '<img src="image.png" width="36" height="36" alt="" aria-hidden="true" style="image-rendering:pixelated;">'
+};
+const GIVE_REASONS = ['Chores','Kindness','Homework','Helping out'];
+const TAKE_REASONS = ['Spent on a reward',"Didn't listen",'Not sharing','Other'];
+const UNIT_SIZE = {sparks:1, gems:10, dollars:100};
+const DAY = 864e5;
+
+// ---------- Views ----------
+function show(view, message){
+  $('v-status').hidden = view !== 'status';
+  $('v-login').hidden = view !== 'login';
+  $('v-app').hidden = view !== 'app';
+  $('nav').hidden = view !== 'app';
+  if (view === 'status') $('status-msg').textContent = message || 'Loading…';
+}
+
+if (Object.values(firebaseConfig).some(v => String(v).startsWith('YOUR_'))) {
+  show('status', 'Setup needed: paste your firebaseConfig into the top of the script in index.html.');
+  throw new Error('Firebase config not set');
+}
+
+// ---------- Firebase ----------
+const base = `https://www.gstatic.com/firebasejs/${FIREBASE_VERSION}`;
+let fbApp, fbAuth, fbStore;
+try {
+  [fbApp, fbAuth, fbStore] = await Promise.all([
+    import(`${base}/firebase-app.js`), import(`${base}/firebase-auth.js`), import(`${base}/firebase-firestore.js`)
+  ]);
+} catch (e) {
+  show('status', "Couldn't load Firebase. Check your internet connection and reload.");
+  throw e;
+}
+const { initializeApp } = fbApp;
+const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } = fbAuth;
+const { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+        collection, onSnapshot, addDoc, deleteDoc, doc, serverTimestamp } = fbStore;
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+let db;
+try { db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) }); }
+catch (e) { db = initializeFirestore(app, {}); }
+
+// ---------- State ----------
+let user = null;
+let kids = [];          // [{id, name, color, sortOrder, avatar}]
+let txs = [];           // [{id, kidId, sparks, reason, createdBy, ts}]
+let gotKids = false, gotTxs = false;
+let unsubs = [];
+let filter = 'all';
+let give = null;
+
+const kidById = id => kids.find(k => k.id === id);
+const balance = id => txs.reduce((a,t) => a + (t.kidId === id ? t.sparks : 0), 0);
+const split = t => ({ d: Math.floor(t/100), g: Math.floor(t/10) % 10, s: t % 10 });
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plural = (n, one, many) => n === 1 ? one : many;
+const who = email => PARENT_NAMES[(email || '').toLowerCase()] || (email || 'someone').split('@')[0];
+const initials = name => String(name || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase();
+
+// ---------- Auth ----------
+onAuthStateChanged(auth, u => {
+  stopListening();
+  user = u;
+  if (!u) { show('login'); return; }
+  show('status', 'Loading…');
+  $('status-signout').hidden = true;
+  startListening();
+});
+
+$('login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = $('email').value.trim(), pass = $('password').value;
+  if (!email || !pass) { $('login-err').textContent = 'Enter your email and password.'; return; }
+  $('login-err').textContent = '';
+  $('login-btn').textContent = 'Signing in…';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    $('password').value = '';
+  } catch (err) {
+    const msgs = {
+      'auth/invalid-credential': "That email or password isn't right.",
+      'auth/invalid-email': "That email doesn't look right.",
+      'auth/user-disabled': 'This account has been turned off.',
+      'auth/too-many-requests': 'Too many tries. Wait a minute and try again.',
+      'auth/network-request-failed': "Couldn't connect. Check your internet."
+    };
+    $('login-err').textContent = msgs[err.code] || "Couldn't sign in. Try again.";
+  } finally {
+    $('login-btn').textContent = 'Sign in';
+  }
+});
+['email','password'].forEach(id => $(id).addEventListener('input', () => $('login-err').textContent = ''));
+$('signout').addEventListener('click', () => signOut(auth));
+$('status-signout').addEventListener('click', () => signOut(auth));
+
+// ---------- Live data ----------
+function onDataError(err){
+  if (err.code === 'permission-denied') {
+    show('status', `${user?.email || 'This account'} doesn't have access. Ask a parent to add it to the allowlist.`);
+  } else {
+    show('status', `Couldn't load data (${err.code || 'error'}). Reload to try again.`);
+  }
+  $('status-signout').hidden = false;
+}
+function startListening(){
+  gotKids = gotTxs = false;
+  unsubs.push(onSnapshot(collection(db, 'kids'), snap => {
+    kids = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || String(a.name).localeCompare(String(b.name)));
+    gotKids = true; refresh();
+  }, onDataError));
+  unsubs.push(onSnapshot(collection(db, 'transactions'), snap => {
+    txs = snap.docs.map(d => {
+      const v = d.data({ serverTimestamps: 'estimate' });
+      return { id: d.id, kidId: v.kidId, sparks: Number(v.sparks) || 0, reason: v.reason || '',
+               createdBy: v.createdBy, ts: v.createdAt?.toMillis?.() ?? Date.now() };
+    });
+    gotTxs = true; refresh();
+  }, onDataError));
+}
+function stopListening(){ unsubs.forEach(u => u()); unsubs = []; kids = []; txs = []; if (give) closeSheet(); }
+function refresh(){
+  if (!gotKids || !gotTxs) return;
+  if ($('v-app').hidden) show('app');
+  renderHome(); renderHistory();
+  if (give) { if (kidById(give.kid)) renderSheet(); else closeSheet(); }
+}
+
+function addTx(kidId, sparks, reason){
+  addDoc(collection(db, 'transactions'), {
+    kidId, sparks: Math.round(sparks), reason, createdBy: user.email, createdAt: serverTimestamp()
+  }).catch(err => toast(err.code === 'permission-denied' ? "You don't have permission to do that" : "Couldn't save. Try again."));
+}
+
+// ---------- Home ----------
+function avatarHtml(k){
+  if (k.avatar && AVATARS[k.avatar]) return `<div class="avatar img" aria-hidden="true">${AVATARS[k.avatar]}</div>`;
+  const color = /^#[0-9a-f]{3,8}$/i.test(k.color || '') ? k.color : '#2A6FDB';
+  return `<div class="avatar" style="background:${color}" aria-hidden="true">${esc(initials(k.name))}</div>`;
+}
+function dots(n, kind, label){
+  let h = `<div class="dots ${kind}" role="img" aria-label="${label}: ${n} of 10">`;
+  for (let i = 0; i < 10; i++) h += `<span class="${i < n ? 'on' : ''}"></span>`;
+  return h + '</div>';
+}
+function renderHome(){
+  if (!kids.length) {
+    $('p-home').innerHTML = '<p class="empty">No kids yet. Add them to the <code>kids</code> collection in the Firebase console.</p>';
+    return;
+  }
+  $('p-home').innerHTML = kids.map(k => {
+    const b = split(Math.max(0, balance(k.id)));
+    return `<article class="card" aria-label="${esc(k.name)}">
+      <div class="kid-top">
+        ${avatarHtml(k)}
+        <p class="kid-name">${esc(k.name)}</p>
+        <span class="dollars" id="d-${esc(k.id)}">$${b.d}</span>
+      </div>
+      <div class="row">
+        <div><p><i class="ti ti-diamond ic-gem" aria-hidden="true"></i> <span id="g-${esc(k.id)}">${b.g}</span> ${plural(b.g,'gem','gems')}</p>${dots(b.g,'gem','Gems toward the next dollar')}</div>
+        <button class="btn p1" data-add="10" data-kid="${esc(k.id)}" aria-label="Add 1 gem to ${esc(k.name)}">+1 gem</button>
+      </div>
+      <div class="row" style="margin-bottom:10px">
+        <div><p><i class="ti ti-sparkles ic-spark" aria-hidden="true"></i> <span id="s-${esc(k.id)}">${b.s}</span> ${plural(b.s,'spark','sparks')}</p>${dots(b.s,'spark','Sparks toward the next gem')}</div>
+        <button class="btn p1" data-add="1" data-kid="${esc(k.id)}" aria-label="Add 1 spark to ${esc(k.name)}">+1 spark</button>
+      </div>
+      <button class="btn outline-accent" data-open="${esc(k.id)}">Give or take away</button>
+    </article>`;
+  }).join('');
+}
+function pop(id){ const e = $(id); if (!e) return; e.classList.remove('pop'); void e.offsetWidth; e.classList.add('pop'); }
+
+$('p-home').addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add){
+    const kid = add.dataset.kid, n = Number(add.dataset.add), before = balance(kid), after = before + n;
+    const name = kidById(kid)?.name || 'them';
+    addTx(kid, n, 'Quick add');
+    if (Math.floor(after/100) > Math.floor(before/100)) { setTimeout(() => pop('d-'+kid), 30); toast(`${name} earned a dollar!`); }
+    else if (n === 1 && Math.floor(after/10) > Math.floor(before/10)) { setTimeout(() => pop('g-'+kid), 30); toast('10 sparks became a gem!'); }
+    else toast(`+1 ${n === 10 ? 'gem' : 'spark'} for ${name}`);
+    return;
+  }
+  const open = e.target.closest('[data-open]');
+  if (open) openSheet(open.dataset.open);
+});
+
+// ---------- History ----------
+function fmtAmt(n){
+  const a = Math.abs(n), sign = n < 0 ? '−' : '+';
+  if (a % 100 === 0) return `${sign}$${a/100}`;
+  if (a % 10 === 0) return `${sign}${a/10} <i class="ti ti-diamond" aria-label="${a === 10 ? 'gem' : 'gems'}"></i>`;
+  return `${sign}${a} <i class="ti ti-sparkles" aria-label="${a === 1 ? 'spark' : 'sparks'}"></i>`;
+}
+function dayLabel(ts){
+  const d = new Date(ts), t = new Date(); t.setHours(0,0,0,0);
+  const d0 = new Date(d); d0.setHours(0,0,0,0);
+  const diff = Math.round((t - d0) / DAY);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return 'Yesterday';
+  return d.toLocaleDateString(undefined, {weekday:'long', month:'short', day:'numeric'});
+}
+function renderHistory(){
+  if (filter !== 'all' && !kidById(filter)) filter = 'all';
+  const opts = [{id:'all', name:'All'}, ...kids];
+  $('filters').innerHTML = opts.map(o =>
+    `<button class="chip ${filter === o.id ? 'on' : ''}" data-filter="${esc(o.id)}" aria-pressed="${filter === o.id}">${esc(o.name)}</button>`).join('');
+  const list = txs.filter(t => filter === 'all' || t.kidId === filter).sort((a,b) => b.ts - a.ts);
+  if (!list.length) { $('hist-list').innerHTML = '<p class="empty">No entries yet.</p>'; return; }
+  let html = '', current = null;
+  list.forEach(t => {
+    const label = dayLabel(t.ts);
+    if (label !== current) {
+      if (current !== null) html += '</div>';
+      html += `<p class="day">${esc(label)}</p><div class="list">`;
+      current = label;
+    }
+    const time = new Date(t.ts).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+    html += `<div class="entry">
+      <span class="amt ${t.sparks < 0 ? 'neg' : 'pos'}">${fmtAmt(t.sparks)}</span>
+      <div class="what"><p>${esc(t.reason)}</p><small>${esc(kidById(t.kidId)?.name || 'Unknown')} · by ${esc(who(t.createdBy))} · ${esc(time)}</small></div>
+      <button class="icon-btn" data-undo="${esc(t.id)}" aria-label="Undo ${esc(t.reason)}"><i class="ti ti-arrow-back-up" aria-hidden="true"></i></button>
+    </div>`;
+  });
+  $('hist-list').innerHTML = html + '</div>';
+}
+$('filters').addEventListener('click', e => {
+  const b = e.target.closest('[data-filter]'); if (!b) return;
+  filter = b.dataset.filter; renderHistory();
+});
+$('hist-list').addEventListener('click', e => {
+  const b = e.target.closest('[data-undo]'); if (!b) return;
+  const t = txs.find(x => x.id === b.dataset.undo); if (!t) return;
+  if (balance(t.kidId) - t.sparks < 0) { toast("Can't undo: the balance would go below zero"); return; }
+  deleteDoc(doc(db, 'transactions', t.id))
+    .then(() => toast('Entry undone'))
+    .catch(() => toast("Couldn't undo. Try again."));
+});
+
+// ---------- Tabs ----------
+function tab(which){
+  const home = which === 'home';
+  $('t-home').setAttribute('aria-selected', home);
+  $('t-hist').setAttribute('aria-selected', !home);
+  $('p-home').hidden = !home;
+  $('p-hist').hidden = home;
+  window.scrollTo(0,0);
+}
+$('t-home').addEventListener('click', () => tab('home'));
+$('t-hist').addEventListener('click', () => tab('hist'));
+
+// ---------- Give / take away screen ----------
+function openSheet(kid){
+  give = {kid, mode:'give', amount:1, unit:'sparks', chip:null};
+  $('reason').value = '';
+  $('sheet-title').textContent = kidById(kid)?.name || '';
+  renderSheet();
+  $('sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => $('sheet-back').focus(), 260);
+}
+function closeSheet(){
+  $('sheet').classList.remove('open');
+  document.body.style.overflow = '';
+  give = null;
+}
+function delta(){ return give.amount * UNIT_SIZE[give.unit] * (give.mode === 'take' ? -1 : 1); }
+function describe(t){ const b = split(t); return `$${b.d} · ${b.g} ${plural(b.g,'gem','gems')} · ${b.s} ${plural(b.s,'spark','sparks')}`; }
+function renderSheet(){
+  const isGive = give.mode === 'give';
+  $('mode-give').classList.toggle('on', isGive); $('mode-give').setAttribute('aria-pressed', isGive);
+  $('mode-take').classList.toggle('on', !isGive); $('mode-take').setAttribute('aria-pressed', !isGive);
+  $('amount').textContent = give.amount;
+  [['unit-spark','sparks'],['unit-gem','gems'],['unit-dollar','dollars']].forEach(([id,u]) => {
+    $(id).classList.toggle('on', give.unit === u); $(id).setAttribute('aria-pressed', give.unit === u);
+  });
+  const reasons = isGive ? GIVE_REASONS : TAKE_REASONS;
+  $('reason-chips').innerHTML = reasons.map(r =>
+    `<button class="chip ${give.chip === r ? 'on' : ''}" data-chip="${esc(r)}" aria-pressed="${give.chip === r}">${esc(r)}</button>`).join('');
+  $('reason').placeholder = isGive ? 'Cleaned room without being asked' : 'Ice cream at the park';
+  const now = balance(give.kid), after = now + delta();
+  const p = $('preview');
+  if (after < 0) { p.textContent = `Not enough. ${kidById(give.kid)?.name || 'They'} has ${describe(Math.max(0, now))}`; p.classList.add('bad'); }
+  else { p.textContent = `After this: ${describe(after)}`; p.classList.remove('bad'); }
+  const unitWord = give.unit === 'dollars' ? plural(give.amount,'dollar','dollars')
+                 : give.unit === 'gems' ? plural(give.amount,'gem','gems') : plural(give.amount,'spark','sparks');
+  const c = $('confirm');
+  c.textContent = `${isGive ? 'Give' : 'Take away'} ${give.amount} ${unitWord}`;
+  c.className = 'confirm ' + (isGive ? 'give' : 'take');
+}
+$('sheet-back').addEventListener('click', closeSheet);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && give) closeSheet(); });
+$('mode-give').addEventListener('click', () => { if (give.mode !== 'give') { give.mode = 'give'; give.chip = null; } renderSheet(); });
+$('mode-take').addEventListener('click', () => { if (give.mode !== 'take') { give.mode = 'take'; give.chip = null; } renderSheet(); });
+$('minus').addEventListener('click', () => { give.amount = Math.max(1, give.amount - 1); renderSheet(); });
+$('plus').addEventListener('click', () => { give.amount = Math.min(99, give.amount + 1); renderSheet(); });
+$('unit-spark').addEventListener('click', () => { give.unit = 'sparks'; renderSheet(); });
+$('unit-gem').addEventListener('click', () => { give.unit = 'gems'; renderSheet(); });
+$('unit-dollar').addEventListener('click', () => { give.unit = 'dollars'; renderSheet(); });
+$('reason-chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-chip]'); if (!b) return;
+  give.chip = give.chip === b.dataset.chip ? null : b.dataset.chip; renderSheet();
+});
+$('confirm').addEventListener('click', () => {
+  const d = delta(), kid = give.kid, name = kidById(kid)?.name || 'them';
+  if (balance(kid) + d < 0) { toast(`${name} doesn't have enough for that`); return; }
+  const text = $('reason').value.trim(), chip = give.chip;
+  const reason = chip && text ? `${chip}: ${text}` : (text || chip || (d > 0 ? 'Gift' : 'Taken away'));
+  const label = $('confirm').textContent.replace(/^Give/, 'Gave').replace(/^Take away/, 'Took away');
+  addTx(kid, d, reason);
+  closeSheet();
+  toast(`${label} ${d > 0 ? 'to' : 'from'} ${name}`);
+});
+
+// ---------- Toast ----------
+let toastTimer = 0;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>
