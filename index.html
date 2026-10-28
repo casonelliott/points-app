@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 :root{
   --page:#F3F4F7; --surface:#FFFFFF; --sub:#F1F2F6;
@@ -62,7 +63,7 @@ main{flex:1}
 .btn:active{transform:scale(.97)}
 .p1{width:92px;padding:0;white-space:nowrap}
 .outline-accent{width:100%;border-color:var(--accent);color:var(--accent);margin-top:2px}
-.nav{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--border);background:var(--page);padding:8px 14px calc(8px + env(safe-area-inset-bottom));margin:0 -14px}
+.nav{position:sticky;bottom:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--border);background:var(--page);padding:8px 14px calc(8px + env(safe-area-inset-bottom));margin:0 -14px}
 .nav button{border:none;background:transparent;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--text2);cursor:pointer}
 .nav button i{font-size:20px}
 .nav button[aria-selected="true"]{color:var(--accent)}
@@ -124,6 +125,27 @@ h1.sec{margin:0 0 12px;font-size:20px;font-weight:600}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .pop{animation:pop .4s}
 @keyframes pop{40%{transform:scale(1.3)}}
+/* Stats */
+#range-chips{margin-bottom:12px}
+.sum-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.sum{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:0}
+.sum h3{margin:0 0 6px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.sum small{display:block;font-size:11px;color:var(--text2)}
+.sum b{display:block;font-size:14px;margin-bottom:4px}
+.sum b.big{font-size:18px;margin:0}
+.sw{width:10px;height:10px;border-radius:2px;display:inline-block;flex:none}
+.ct{margin:0 0 6px;font-size:14px;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--text2);margin-bottom:6px}
+.legend span{display:flex;align-items:center;gap:4px}
+.cw{position:relative;width:100%;height:170px}
+#giver-kids .chip{height:32px}
+.giver-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin:10px 0 8px}
+.giver-grid div{background:var(--sub);border-radius:var(--radius);padding:6px 8px;min-width:0}
+.giver-grid p{margin:0;overflow-wrap:anywhere}
+.rrow{display:grid;grid-template-columns:110px minmax(0,1fr) 36px;gap:8px;align-items:center;margin-bottom:6px;font-size:13px}
+.rrow span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rbar{height:8px;border-radius:4px;background:var(--sub)}
+.rbar span{display:block;height:8px;border-radius:4px;background:var(--text2)}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 </style>
 </head>
@@ -162,11 +184,43 @@ h1.sec{margin:0 0 12px;font-size:20px;font-weight:600}
       <div id="hist-list"></div>
       <button class="signout" id="signout">Sign out</button>
     </section>
+    <section id="p-stats" role="tabpanel" aria-labelledby="t-stats" hidden>
+      <h1 class="sec">Stats</h1>
+      <div class="chips" id="range-chips" role="group" aria-label="Timeframe">
+        <button class="chip on" data-range="7d" aria-pressed="true">Last 7 days</button>
+        <button class="chip" data-range="month" aria-pressed="false">This month</button>
+        <button class="chip" data-range="last" aria-pressed="false">Last month</button>
+        <button class="chip" data-range="year" aria-pressed="false">This year</button>
+      </div>
+      <p class="msg" id="stats-msg" hidden></p>
+      <div class="sum-grid" id="stat-sum"></div>
+      <div class="card">
+        <p class="ct" id="earn-title">Sparks earned per day</p>
+        <div class="legend" id="earn-legend"></div>
+        <div class="cw"><canvas id="c-earn" role="img" aria-label="Bar chart of sparks earned by each kid over the selected timeframe"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="ct" id="giver-title">Who gave sparks, per day</p>
+        <div class="chips" id="giver-kids" role="group" aria-label="Show sparks given to"></div>
+        <div class="giver-grid" id="giver-totals"></div>
+        <div class="cw"><canvas id="c-givers" role="img" aria-label="Stacked bar chart of sparks given by each adult over the selected timeframe"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="ct">Balance over time</p>
+        <div class="legend" id="bal-legend"></div>
+        <div class="cw"><canvas id="c-bal" role="img" aria-label="Line chart of each kid's balance in dollars over the selected timeframe"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="ct">Top reasons</p>
+        <div id="reasons"></div>
+      </div>
+    </section>
   </main>
 
   <nav class="nav" id="nav" role="tablist" aria-label="Sections" hidden>
     <button role="tab" id="t-home" aria-selected="true" aria-controls="p-home"><i class="ti ti-home" aria-hidden="true"></i>Home</button>
     <button role="tab" id="t-hist" aria-selected="false" aria-controls="p-hist"><i class="ti ti-clock" aria-hidden="true"></i>History</button>
+    <button role="tab" id="t-stats" aria-selected="false" aria-controls="p-stats"><i class="ti ti-chart-bar" aria-hidden="true"></i>Stats</button>
   </nav>
 </div>
 
@@ -220,7 +274,8 @@ const firebaseConfig = {
 // How each parent's email shows in History ("by Mom"). Lowercase emails.
 const PARENT_NAMES = {
   "casonnicholson@gmail.com": "Dad",
-  "shi.s.elliott@gmail.com": "Mom"
+  "shi.s.elliott@gmail.com": "Mom",
+  "tarrieanndirschel@gmail.com": "Gaga"
 };
 
 const FIREBASE_VERSION = "13.1.0";
@@ -357,6 +412,7 @@ function refresh(){
   if (!gotKids || !gotTxs) return;
   if ($('v-app').hidden) show('app');
   renderHome(); renderHistory();
+  if (currentTab === 'stats') renderStats();
   if (give) { if (kidById(give.kid)) renderSheet(); else closeSheet(); }
 }
 
@@ -472,16 +528,177 @@ $('hist-list').addEventListener('click', e => {
 });
 
 // ---------- Tabs ----------
+let currentTab = 'home';
 function tab(which){
-  const home = which === 'home';
-  $('t-home').setAttribute('aria-selected', home);
-  $('t-hist').setAttribute('aria-selected', !home);
-  $('p-home').hidden = !home;
-  $('p-hist').hidden = home;
+  currentTab = which;
+  ['home','hist','stats'].forEach(t => {
+    $('t-'+t).setAttribute('aria-selected', t === which);
+    $('p-'+t).hidden = t !== which;
+  });
   window.scrollTo(0,0);
+  if (which === 'stats') renderStats();
 }
 $('t-home').addEventListener('click', () => tab('home'));
 $('t-hist').addEventListener('click', () => tab('hist'));
+$('t-stats').addEventListener('click', () => tab('stats'));
+
+// ---------- Stats ----------
+const KID_PALETTE = ['#2a78d6','#eb6834','#1baf7a','#e87ba4'];
+const GIVER_PALETTE = ['#1baf7a','#6250d6','#eda100','#e87ba4','#008300','#e34948'];
+let statsRange = '7d', statsKid = 'all';
+const charts = {};
+const sumOf = a => a.reduce((x,y) => x + y, 0);
+const kidColor = (k, i) => /^#[0-9a-f]{6}$/i.test(k.color || '') ? k.color : KID_PALETTE[i % KID_PALETTE.length];
+function units(t){
+  t = Math.abs(Math.round(t));
+  const b = split(t), p = [];
+  if (b.d) p.push('$' + b.d);
+  if (b.g) p.push(b.g + (b.g === 1 ? ' gem' : ' gems'));
+  if (b.s || !p.length) p.push(b.s + (b.s === 1 ? ' spark' : ' sparks'));
+  return p.join(' · ');
+}
+function chartChrome(){
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  return { tick: '#898781', grid: dark ? '#2c2c2a' : '#e1e0d9', surf: dark ? '#1F2027' : '#FFFFFF' };
+}
+function baseOpts(c){
+  return { responsive:true, maintainAspectRatio:false, animation:false,
+    plugins:{ legend:{display:false}, tooltip:{mode:'index', intersect:false} },
+    scales:{ x:{ grid:{display:false}, ticks:{color:c.tick, font:{size:11}, maxRotation:0, autoSkip:true, maxTicksLimit:10} },
+             y:{ beginAtZero:true, grid:{color:c.grid}, border:{display:false}, ticks:{color:c.tick, font:{size:11}, maxTicksLimit:5, precision:0} } } };
+}
+function draw(id, config){
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart($(id), config);
+}
+function buckets(range){
+  const now = new Date(), Y = now.getFullYear(), M = now.getMonth(), out = [];
+  const at = (y, m, d) => new Date(y, m, d);
+  if (range === '7d') {
+    for (let i = 6; i >= 0; i--) {
+      const s = at(Y, M, now.getDate() - i);
+      out.push({ start:+s, end:+at(s.getFullYear(), s.getMonth(), s.getDate() + 1), label:s.toLocaleDateString(undefined, {weekday:'short'}) });
+    }
+  } else if (range === 'month' || range === 'last') {
+    const first = at(Y, M - (range === 'last' ? 1 : 0), 1);
+    const days = range === 'month' ? now.getDate() : new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    for (let d = 1; d <= days; d++) {
+      out.push({ start:+at(first.getFullYear(), first.getMonth(), d), end:+at(first.getFullYear(), first.getMonth(), d + 1), label:String(d) });
+    }
+  } else {
+    for (let m = 0; m <= M; m++) {
+      const s = at(Y, m, 1);
+      out.push({ start:+s, end:+at(Y, m + 1, 1), label:s.toLocaleDateString(undefined, {month:'short'}) });
+    }
+  }
+  return out;
+}
+function legendHtml(dashedOdd, bars){
+  return kids.map((k, i) => {
+    const c = kidColor(k, i), odd = i % 2 === 1;
+    const mark = bars
+      ? `<span class="sw" style="${odd ? `background:transparent;border:1.5px solid ${c}` : `background:${c}`}"></span>`
+      : `<span style="width:16px;height:0;border-top:2px ${odd && dashedOdd ? 'dashed' : 'solid'} ${c};display:inline-block"></span>`;
+    return `<span>${mark}${esc(k.name)}</span>`;
+  }).join('');
+}
+function renderStats(){
+  if (!window.Chart) {
+    $('stats-msg').textContent = "Charts couldn't load. Check your connection, then reopen this tab.";
+    $('stats-msg').hidden = false;
+  } else $('stats-msg').hidden = true;
+
+  const bs = buckets(statsRange), lo = bs[0].start, hi = bs[bs.length - 1].end;
+  const perMonth = statsRange === 'year';
+  const inRange = txs.filter(t => t.ts >= lo && t.ts < hi);
+  const slot = ts => bs.findIndex(b => ts >= b.start && ts < b.end);
+  const c = chartChrome();
+
+  // Per-kid summary
+  $('stat-sum').innerHTML = kids.map((k, i) => {
+    const mine = inRange.filter(t => t.kidId === k.id);
+    const earned = sumOf(mine.filter(t => t.sparks > 0).map(t => t.sparks));
+    const spent = sumOf(mine.filter(t => t.sparks < 0).map(t => -t.sparks));
+    const net = earned - spent;
+    return `<div class="sum"><h3><span class="sw" style="background:${kidColor(k, i)}"></span>${esc(k.name)}</h3>
+      <small>Earned</small><b class="pos">+${units(earned)}</b>
+      <small>Spent</small><b class="neg">${spent ? '−' + units(spent) : 'None'}</b>
+      <small>Net change</small><b class="big ${net < 0 ? 'neg' : 'pos'}">${net < 0 ? '−' : '+'}${units(net)}</b></div>`;
+  }).join('');
+
+  // Sparks earned per kid
+  $('earn-title').textContent = perMonth ? 'Sparks earned per month' : 'Sparks earned per day';
+  $('earn-legend').innerHTML = legendHtml(false, true);
+  const earnSets = kids.map((k, i) => {
+    const data = bs.map(() => 0);
+    inRange.forEach(t => { if (t.kidId === k.id && t.sparks > 0) { const j = slot(t.ts); if (j >= 0) data[j] += t.sparks; } });
+    const col = kidColor(k, i), odd = i % 2 === 1;
+    return { label:k.name, data, backgroundColor: odd ? col + '33' : col, borderColor: col, borderWidth: odd ? 1.5 : 0,
+             borderRadius:{topLeft:3, topRight:3}, maxBarThickness:14 };
+  });
+
+  // Who gave sparks (colors stay with the same adult across filters)
+  if (statsKid !== 'all' && !kidById(statsKid)) statsKid = 'all';
+  $('giver-kids').innerHTML = [{id:'all', name: kids.length === 2 ? 'Both kids' : 'All kids'}, ...kids].map(o =>
+    `<button class="chip ${statsKid === o.id ? 'on' : ''}" data-gk="${esc(o.id)}" aria-pressed="${statsKid === o.id}">${esc(o.name)}</button>`).join('');
+  $('giver-title').textContent = perMonth ? 'Who gave sparks, per month' : 'Who gave sparks, per day';
+  const everyone = [...new Set(txs.filter(t => t.sparks > 0).map(t => t.createdBy || ''))]
+    .sort((a, b) => who(a).localeCompare(who(b)));
+  const giverColor = email => GIVER_PALETTE[everyone.indexOf(email) % GIVER_PALETTE.length];
+  const given = inRange.filter(t => t.sparks > 0 && (statsKid === 'all' || t.kidId === statsKid));
+  const giverSets = everyone.map(email => {
+    const data = bs.map(() => 0);
+    given.forEach(t => { if ((t.createdBy || '') === email) { const j = slot(t.ts); if (j >= 0) data[j] += t.sparks; } });
+    return { email, label: who(email), data, total: sumOf(data), backgroundColor: giverColor(email), borderColor: c.surf,
+             borderWidth: {top: 1}, maxBarThickness: 18 };
+  }).filter(s => s.total > 0);
+  const allGiven = sumOf(giverSets.map(s => s.total));
+  $('giver-totals').innerHTML = giverSets.length
+    ? giverSets.map(s => `<div><p style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:4px"><span class="sw" style="background:${s.backgroundColor}"></span>${esc(s.label)}</p>
+        <p style="font-size:15px;font-weight:600">${Math.round(s.total / allGiven * 100)}%</p>
+        <p style="font-size:11px;color:var(--text2)">${units(s.total)}</p></div>`).join('')
+    : '<p class="empty" style="grid-column:1/-1;padding:8px 0">No sparks given in this period.</p>';
+
+  // Balance at the end of each period, in dollars
+  $('bal-legend').innerHTML = legendHtml(true, false);
+  const balSets = kids.map((k, i) => {
+    const mine = txs.filter(t => t.kidId === k.id);
+    const data = bs.map(b => Math.max(0, sumOf(mine.filter(t => t.ts < b.end).map(t => t.sparks))) / 100);
+    const col = kidColor(k, i);
+    return { label:k.name, data, borderColor:col, backgroundColor:col, borderWidth:2, pointRadius:0, tension:0.3,
+             borderDash: i % 2 === 1 ? [5, 4] : [] };
+  });
+
+  // Top reasons (text before ":" so "Chores: made bed" counts as Chores)
+  const counts = {};
+  inRange.filter(t => t.sparks > 0).forEach(t => { const key = (t.reason || 'Other').split(':')[0].trim() || 'Other'; counts[key] = (counts[key] || 0) + 1; });
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  $('reasons').innerHTML = top.length
+    ? top.map(([name, n]) => `<div class="rrow"><span>${esc(name)}</span><span class="rbar"><span style="width:${Math.round(n / top[0][1] * 100)}%"></span></span><span style="text-align:right;color:var(--text2)">${n}×</span></div>`).join('')
+    : '<p class="empty" style="padding:8px 0">No sparks earned in this period.</p>';
+
+  if (!window.Chart) return;
+  const labels = bs.map(b => b.label);
+  draw('c-earn', { type:'bar', data:{ labels, datasets:earnSets }, options:baseOpts(c) });
+  const gOpts = baseOpts(c); gOpts.scales.x.stacked = true; gOpts.scales.y.stacked = true;
+  draw('c-givers', { type:'bar', data:{ labels, datasets:giverSets }, options:gOpts });
+  const bOpts = baseOpts(c);
+  delete bOpts.scales.y.ticks.precision;
+  bOpts.scales.y.ticks.callback = v => '$' + (Number.isInteger(v) ? v : Number(v).toFixed(2));
+  bOpts.plugins.tooltip.callbacks = { label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toFixed(2)}` };
+  draw('c-bal', { type:'line', data:{ labels, datasets:balSets }, options:bOpts });
+}
+$('range-chips').addEventListener('click', e => {
+  const b = e.target.closest('[data-range]'); if (!b) return;
+  statsRange = b.dataset.range;
+  $('range-chips').querySelectorAll('[data-range]').forEach(x => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
+  renderStats();
+});
+$('giver-kids').addEventListener('click', e => {
+  const b = e.target.closest('[data-gk]'); if (!b) return;
+  statsKid = b.dataset.gk; renderStats();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (currentTab === 'stats') renderStats(); });
 
 // ---------- Give / take away screen ----------
 function openSheet(kid){

@@ -1,6 +1,6 @@
 // Gem Tracker service worker.
 // Bump CACHE_VERSION whenever you upload changes, so phones pick them up.
-const CACHE_VERSION = 'gem-tracker-v1';
+const CACHE_VERSION = 'gem-tracker-v2';
 const APP_SHELL = [
   './',
   './index.html',
